@@ -49,6 +49,7 @@ Total Profit: The total profit made from the sale (Total Revenue — Total Cost)
 - ⚡On analyzing the financial performance of placed orders. Identify the lowest and highest margin percentages from this analysis?
 - ⚡On identifying key sales trends d etermine the top 3 highest-value orders for a specific item type from the dataset?
 - ⚡Which type of item is most frequently sold on weekends in the Sub-Saharan Africa region?
+- ⚡Compute year-over-year growth for total revenue.
 
 ## Solution: 
 
@@ -182,6 +183,26 @@ Item_most_freqntly_sold = df\
                                         .orderBy("sum_units_sold",ascending=False)
 Item_most_freqntly_sold.first()
 # Personal Care
+```
+
+Compute year-over-year growth for total revenue.
+- This requires extracting the year from the order date and performing a minus operation for year revenue of current month with that of pervious month divided by current month year revenue.
+```python
+from pyspark.sql.functions import year, sum, lag, round, concat, lit
+from pyspark.sql.window import Window
+
+# Aggregate revenue by year
+revenue_by_year = df.groupBy(year(col("Order Date")).alias("Year")) \
+    .agg(sum("Total Revenue").alias("Yearly Revenue"))
+
+# Calculate year-over-year growth
+windowSpec = Window.orderBy("Year")
+revenue_with_growth = revenue_by_year.withColumn(
+    "YoY Growth %",
+    concat(round(((col("Yearly Revenue") - lag("Yearly Revenue", 1).over(windowSpec)) / lag("Yearly Revenue", 1).over(windowSpec))*100).cast("int").cast("string"),lit(" %"))
+)
+
+revenue_with_growth.display()
 ```
 
 ### Connect with me:

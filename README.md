@@ -48,6 +48,7 @@ Total Profit: The total profit made from the sale (Total Revenue — Total Cost)
 - ⚡Which month has the highest average number of units sold?
 - ⚡On analyzing the financial performance of placed orders. Identify the lowest and highest margin percentages from this analysis?
 - ⚡On identifying key sales trends d etermine the top 3 highest-value orders for a specific item type from the dataset?
+- ⚡Which type of item is most frequently sold on weekends in the Sub-Saharan Africa region?
 
 ## Solution: 
 
@@ -166,6 +167,21 @@ highest_valuable_orders = df.withColumn("row_id", row_number().over(window_spec)
 
 # Display the top 3 highest-value orders for each item type
 highest_valuable_orders.display()
+```
+
+Which type of item is most frequently sold on weekends in the Sub-Saharan Africa region?
+- Filter the DataFrame for the Sub-Saharan Africa region and weekends. PySpark's weekday function returns 6for Sunday and 5 for Saturday.
+```python
+from pyspark.sql.functions import col, weekday
+# Filter the DataFrame for the Sub-Saharan Africa region and weekends
+# PySpark's weekday function returns 6for Sunday and 5for Saturday
+Item_most_freqntly_sold = df\
+                            .where((col("Region")=="Sub-Saharan Africa") & (weekday(col("Order Date")).isin([5,6])))\
+                                .groupBy(col("Item Type")).agg({"Units Sold":"sum"})\
+                                    .withColumnRenamed("sum(Units Sold)","sum_units_sold")\
+                                        .orderBy("sum_units_sold",ascending=False)
+Item_most_freqntly_sold.first()
+# Personal Care
 ```
 
 ### Connect with me:
